@@ -23,17 +23,21 @@ elif [ -s "temp" ]; then #Check if temp is empty, else rm its content
     rm -f -r -d temp/*
 fi
 
-temp=$*
-arglist=${temp#*" "}
+if [ ! -d "pictures" ]; then #Check if pictures/ exist, else create it and give all acces
+    mkdir pictures
+    chmod u+r+w+x pictures
+fi
 
-for i in $arglist; do #if arg? == -h || --help, arrays help and exit 0
+tmp=$@
+
+for i in ${tmp#*" "}; do #if arg? == -h || --help, arrays help and exit 0
     if [ $i = "-h" ] || [ $i = "--help" ]; then
         echo help msg
         exit 0
     fi
 done
 
-for i in $arglist; do
+for i in ${tmp#*" "}; do
 
     case $i in
 
@@ -57,3 +61,5 @@ for i in $arglist; do
 
     esac
 done
+
+echo elapsed time: $SECONDS seconds #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
