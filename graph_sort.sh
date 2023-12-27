@@ -66,7 +66,7 @@ for i in ${tmp#*" "}; do
     plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
 EOFMarker
         
-        echo -e "\nelapsed time for -d1: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        echo -e "\nelapsed time for -d1: $SECONDS seconds"
         ;;
 
     -d2) #10 drivers with longest distances
@@ -74,10 +74,12 @@ EOFMarker
 
     -l) #10 longest rides
         SECONDS=0
+       
+        #awk part
 
         cut -d';' -f1,5 $1 |awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
-        echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        echo -e "\nelapsed time for -l: $SECONDS seconds"
         ;;
 
     -t) #10 most crossed towns
