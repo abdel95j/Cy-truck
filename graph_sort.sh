@@ -49,7 +49,7 @@ for i in ${tmp#*" "}; do
         cut -d';' -f1,6 < $1 | awk -F';' '!arr[$1]++ {arr2[$2]++} END {for (i in arr2) print i ";" arr2[i]}' | sort -t';' -k2,2nr | head -n 10 > temp/d1.temp
         
         # cut the data.csv file to just keep column 1 and 6
-        # takes the duplicates of rides ID away using a arr to see if the ID were encountred already
+        # takes the duplicates of rides ID away using an arr to see if the ID were encountred already
         # next, counts the occurences of names using arr2 and separate them by ';' in the output
         # after all this, sort the output of names numerically by occurences and from the highest to lowest
         # using ; as delimiter. To finish, take the 10 first lines of the output
@@ -66,13 +66,18 @@ for i in ${tmp#*" "}; do
     plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
 EOFMarker
         
-        echo -e "\nelapsed time for d1: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        echo -e "\nelapsed time for -d1: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
         ;;
 
     -d2) #10 drivers with longest distances
         ;;
 
     -l) #10 longest rides
+        SECONDS=0
+
+        cut -d';' -f1,5 $1 |awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
+        
+        echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
         ;;
 
     -t) #10 most crossed towns
