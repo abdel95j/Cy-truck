@@ -42,7 +42,7 @@ for i in ${tmp#*" "}; do
     case $i in
 
     -d1) #10 drivers with most Nrides
-        SECONDS=0
+        start_time=$(date +%s.%N) #start the timer
         
         #awk part
 
@@ -56,31 +56,48 @@ for i in ${tmp#*" "}; do
         # finally it sends all in the d1.temp file in temp/
 
 gnuplot <<-EOF
-        reset
-        set terminal pngcairo enhanced font "arial,10"
-        set output 'pictures/d1_output.png'
-        set style fill solid noborder
-        set autoscale yfix
-        set offset 0,1,0.5,0.5
-        set xrange [0:*]
-        plot 'temp/d1.temp' using (\${2}*0.5):0:(\${2}*0.5):(0.4):yticlabel(1) with boxxyerrorbars notitle
+    set terminal pngcairo enhanced font "arial,10"
+    set output 'pictures/d1_output.png'
+
+    # Données d'exemple (remplacez cela par le chemin de votre fichier de données)
+
+
+    # Paramètres du graphique
+    set datafile separator ";"
+    set style fill solid
+    set boxwidth 0.8
+    set yrange [0:*]
+    set xrange [0:250] # Définir une plage x appropriée
+    set xlabel 'Number of Rides'
+    set ylabel 'Driver'
+    set title 'Horizontal Histogram'
+
+    # Tracer l'histogramme horizontal
+    plot 'temp/d1.temp' using 0:2:ytic(1) with boxes lc rgb "#61f2a2" notitle
 EOF
 
-        
-        echo -e "\nelapsed time for -d1: $SECONDS seconds"
+
+
+        end_time=$(date +%s.%N) #end the timer
+        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+
+        echo -e "\nelapsed time for -d1: $elapsed_time seconds"
         eog pictures/d1_output.png 
         ;;
 
     -d2) #10 drivers with longest distances
-    start_time=$(date +%s.%N) #start the timer
-    LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' data.csv| sort -t';' -k2nr | head
-    end_time=$(date +%s.%N) #end the timer
-    elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
-        echo "the script took $elapsed_time seconds to execute"
+        start_time=$(date +%s.%N) #start the timer
+
+        LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' data.csv| sort -t';' -k2nr | head
+        
+        end_time=$(date +%s.%N) #end the timer
+        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+        
+        echo -e "\nelapsed time for -d1: $elapsed_time seconds"
         ;;
 
     -l) #10 longest rides
-        SECONDS=0
+        start_time=$(date +%s.%N) #start the timer
        
         #awk part
 
@@ -100,8 +117,10 @@ gnuplot << EOF
         set datafile separator ";"
         plot "temp/l.temp" using 2:xtic(1) lc rgb "#61f2a2" with histograms title "Total travel distances"
 EOF
+        end_time=$(date +%s.%N) #end the timer
 
-        echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        echo -e "\nelapsed time for -l: $end_time seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        eog pictures/l_output.png 
         ;;
 
     -t) #10 most crossed towns
