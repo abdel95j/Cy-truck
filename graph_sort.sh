@@ -77,6 +77,21 @@ EOFMarker
 
         cut -d';' -f1,5 $1 |awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
+        # Using Gnuplot to create the chart
+gnuplot << EOF
+        set terminal pngcairo enhanced font "arial,10"
+        set output 'pictures/output_l.png'
+        set title "Option -l : Distance = f(Route)"
+        set xlabel "ROUTE ID"
+        set ylabel "DISTANCE (Km)"
+        set style data histograms
+        set style fill solid
+        set boxwidth 2.0
+        set yrange [0:3000]
+        set datafile separator ";"
+        plot "temp/l.temp" using 2:xtic(1) lc rgb "#61f2a2" with histograms title "Total travel distances"
+EOF
+
         echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
         ;;
 
