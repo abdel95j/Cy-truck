@@ -58,12 +58,12 @@ for i in ${tmp#*" "}; do
         gnuplot <<-EOFMarker
     set terminal png size 800,600
     set output 'pictures/d1.png'
-    set style data histeps
-    set style fill solid
+    set style data boxes
+    set style fill solid border
     set boxwidth 0.8
     set datafile separator ";"
     set title '10 drivers with most rides'
-    plot 'temp/d1.temp' using 2:ytic(1) notitle 
+    plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
 EOFMarker
         
         echo -e "\nelapsed time for d1: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
