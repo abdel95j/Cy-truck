@@ -55,16 +55,25 @@ for i in ${tmp#*" "}; do
         # using ; as delimiter. To finish, take the 10 first lines of the output
         # finally it sends all in the d1.temp file in temp/
 
-        gnuplot <<-EOFMarker
-    set terminal png size 800,600
-    set output 'pictures/d1.png'
-    set style data boxes
-    set style fill solid border
-    set boxwidth 0.8
+gnuplot << EOF
+    set terminal pngcairo enhanced font "arial,10"
+    set output 'pictures/output_d1.png'
+    set ylabel "Option -d1 : Nb routes = f(Drivers)"
+    set xlabel 'DRIVER NAMES' rotate by 180
+    set y2label 'NB ROUTES'  # Secondary y-axis label (y2)
+    unset key
+    set style data histograms
+    set style histogram cluster gap 1 # clustered histogram style with 1 spacing between groups
+    set style fill solid border -1
+    set boxwidth 1.6
+    set xtics rotate  # Rotates scale labels on x-axis
+    set y2tics rotate  # Rotates scale labels on secondary y-axis (y2)
+    set y2range [0:250]
+    unset ytics;set y2tics mirror
     set datafile separator ";"
-    set title '10 drivers with most rides'
-    plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
-EOFMarker
+    plot 'temp/d1.temp' using 2:xtic(1) axes x1y2 lc rgb "#61f2a2"
+EOF
+    convert -rotate 90 pictures/output_d1.png pictures/output_d1.png  # IL FAUT INSTALLER Imagemagick
         
         echo -e "\nelapsed time for -d1: $SECONDS seconds"
         ;;
@@ -79,9 +88,6 @@ EOFMarker
 
         cut -d';' -f1,5 $1 |awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
-<<<<<<< HEAD
-        echo -e "\nelapsed time for -l: $SECONDS seconds"
-=======
         # Using Gnuplot to create the chart
 gnuplot << EOF
         set terminal pngcairo enhanced font "arial,10"
@@ -89,16 +95,16 @@ gnuplot << EOF
         set title "Option -l : Distance = f(Route)"
         set xlabel "ROUTE ID"
         set ylabel "DISTANCE (Km)"
+        unset key
         set style data histograms
         set style fill solid
         set boxwidth 2.0
         set yrange [0:3000]
         set datafile separator ";"
-        plot "temp/l.temp" using 2:xtic(1) lc rgb "#61f2a2" with histograms title "Total travel distances"
+        plot "temp/l.temp" using 2:xtic(1) lc rgb "#61f2a2" 
 EOF
 
         echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
->>>>>>> f98a563cafe5ee718608d8619b827aa2d0bd7595
         ;;
 
     -t) #10 most crossed towns
