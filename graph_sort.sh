@@ -41,12 +41,12 @@ for i in ${tmp#*" "}; do
 
     case $i in
 
-    -d1) #10 drivers with most rides
+    -d1) #10 drivers with most Nrides
         SECONDS=0
         
         #awk part
 
-        cut -d';' -f1,6 < $1 | awk -F';' '!arr[$1]++ {arr2[$2]++} END {for (i in arr2) print i ";" arr2[i]}' | sort -t';' -k2,2nr | head -n 10 > temp/d1.temp
+        cut -d';' -f1,6 "$1" |awk -F';' '!arr[$1]++ {arr2[$2]++} END {for (i in arr2) printf "%s;%d\n",i,arr2[i]}' | sort -t';' -k2nr | head > temp/d1.temp
         
         # cut the data.csv file to just keep column 1 and 6
         # takes the duplicates of rides ID away using an arr to see if the ID were encountred already
@@ -55,18 +55,20 @@ for i in ${tmp#*" "}; do
         # using ; as delimiter. To finish, take the 10 first lines of the output
         # finally it sends all in the d1.temp file in temp/
 
-        gnuplot <<-EOFMarker
-    set terminal png size 800,600
-    set output 'pictures/d1.png'
-    set style data boxes
-    set style fill solid border
-    set boxwidth 0.8
-    set datafile separator ";"
-    set title '10 drivers with most rides'
-    plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
-EOFMarker
+gnuplot <<-EOF
+        reset
+        set terminal pngcairo enhanced font "arial,10"
+        set output 'pictures/d1_output.png'
+        set style fill solid noborder
+        set autoscale yfix
+        set offset 0,1,0.5,0.5
+        set xrange [0:*]
+        plot 'temp/d1.temp' using (\${2}*0.5):0:(\${2}*0.5):(0.4):yticlabel(1) with boxxyerrorbars notitle
+EOF
+
         
         echo -e "\nelapsed time for -d1: $SECONDS seconds"
+        eog pictures/d1_output.png 
         ;;
 
     -d2) #10 drivers with longest distances
@@ -77,15 +79,12 @@ EOFMarker
        
         #awk part
 
-        cut -d';' -f1,5 $1 |awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
+        cut -d';' -f1,5 $1 |LC_NUMERIC=en_US.UTF-8 awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
-<<<<<<< HEAD
-        echo -e "\nelapsed time for -l: $SECONDS seconds"
-=======
         # Using Gnuplot to create the chart
 gnuplot << EOF
         set terminal pngcairo enhanced font "arial,10"
-        set output 'pictures/output_l.png'
+        set output 'pictures/l_output.png'
         set title "Option -l : Distance = f(Route)"
         set xlabel "ROUTE ID"
         set ylabel "DISTANCE (Km)"
@@ -98,7 +97,6 @@ gnuplot << EOF
 EOF
 
         echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
->>>>>>> f98a563cafe5ee718608d8619b827aa2d0bd7595
         ;;
 
     -t) #10 most crossed towns
