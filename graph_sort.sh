@@ -70,6 +70,11 @@ EOFMarker
         ;;
 
     -d2) #10 drivers with longest distances
+    start_time=$(date +%s.%N) #start the timer
+    LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' data.csv| sort -t';' -k2nr | head
+    end_time=$(date +%s.%N) #end the timer
+    elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+        echo "the script took $elapsed_time seconds to execute"
         ;;
 
     -l) #10 longest rides
