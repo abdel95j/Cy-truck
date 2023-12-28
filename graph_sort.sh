@@ -56,39 +56,64 @@ for i in ${tmp#*" "}; do
         # finally it sends all in the d1.temp file in temp/
 
 gnuplot << EOF
-    set terminal pngcairo enhanced font "arial,10"
-    set output 'pictures/d1_output.png'
-    set ylabel "Option -d1 : Nb routes = f(Drivers)"
-    set xlabel 'DRIVER NAMES' rotate by 180
-    set y2label 'NB ROUTES'
-    unset key
-    set style data histograms
-    set style histogram cluster gap 1
-    set style fill solid border -1
-    set boxwidth 1.6
-    set xtics rotate
-    set y2tics rotate
-    set y2range [0:250]
-    unset ytics;set y2tics mirror
-    set datafile separator ";"
-    plot 'temp/d1.temp' using 2:xtic(1) axes x1y2 lc rgb "#61f2a2"
+        set terminal pngcairo size 800,1200 enhanced font "arial,12"
+        set output 'pictures/d1_output.png'
+        set ylabel "Option -d1 : Nb routes = f(Drivers)"
+        set xlabel 'DRIVER NAMES' rotate by 180
+        set y2label 'NB ROUTES'
+        unset key
+        set style data histograms
+        set style histogram cluster gap 1
+        set style fill solid border 
+        set boxwidth 1.6
+        set xtics rotate
+        set y2tics rotate
+        set y2range [0:250]
+        unset ytics;set y2tics mirror
+        set datafile separator ";"
+        plot 'temp/d1.temp' using 2:xtic(1) axes x1y2 lc rgb "#61f2a2"
 EOF
 
-    convert -rotate 90 pictures/d1_output.png pictures/d1_output.png  # installer imagemagick
+        convert -rotate 90 pictures/d1_output.png pictures/d1_output.png  
 
-        
-        echo -e "\nelapsed time for -d1: $SECONDS seconds"
+        end_time=$(date +%s.%N) #end the timer
+        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+
+        echo -e "\nelapsed time for -d1: $elapsed_time seconds"
+        display "pictures/d1_output.png"
         ;;
 
     -d2) #10 drivers with longest distances
         start_time=$(date +%s.%N) #start the timer
 
-        LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' data.csv| sort -t';' -k2nr | head
-        
+        LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' $1 | sort -t';' -k2nr | head > temp/d2.temp
+
+        #Gnuplot
+gnuplot << EOF
+        set terminal pngcairo size 800,1200 enhanced font "arial,12"
+        set output 'pictures/d2_output.png'
+        set ylabel "Option -d2 : Distances = f(Drivers)"
+        set xlabel 'DRIVER NAMES' rotate by 180
+        set y2label 'DISTANCES (x1000 km)'
+        unset key
+        set style data histograms
+        set style histogram cluster gap 1
+        set style fill solid border 
+        set boxwidth 1.6
+        set xtics rotate
+        set y2tics rotate
+        set y2range [0:160]
+        unset ytics;set y2tics mirror
+        set datafile separator ";"
+        plot 'temp/d2.temp' using (\$2/1000):xtic(1) axes x1y2 lc rgb "#61f2a2"
+EOF
+        convert -rotate 90 pictures/d2_output.png pictures/d2_output.png  
+
         end_time=$(date +%s.%N) #end the timer
         elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
         
-        echo -e "\nelapsed time for -d1: $elapsed_time seconds"
+        echo -e "\nelapsed time for -d2: $elapsed_time seconds"
+        display "pictures/d2_output.png"
         ;;
 
     -l) #10 longest rides
@@ -100,7 +125,7 @@ EOF
         
         # Using Gnuplot to create the chart
 gnuplot << EOF
-        set terminal pngcairo enhanced font "arial,10"
+        set terminal pngcairo size 800,800 enhanced font "arial,12"
         set output 'pictures/l_output.png'
         set title "Option -l : Distance = f(Route)"
         set xlabel "ROUTE ID"
@@ -116,6 +141,7 @@ EOF
         end_time=$(date +%s.%N) #end the timer
 
         echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        display "pictures/l_output.png"
 
         ;;
 
