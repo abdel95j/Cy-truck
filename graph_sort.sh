@@ -140,7 +140,8 @@ gnuplot << EOF
 EOF
         end_time=$(date +%s.%N) #end the timer
 
-        echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
+        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+        echo -e "\nelapsed time for -l: $elapsed_time seconds" 
         display "pictures/l_output.png"
 
         ;;
