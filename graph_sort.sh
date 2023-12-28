@@ -57,23 +57,25 @@ for i in ${tmp#*" "}; do
 
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10"
-    set output 'pictures/output_d1.png'
+    set output 'pictures/d1_output.png'
     set ylabel "Option -d1 : Nb routes = f(Drivers)"
     set xlabel 'DRIVER NAMES' rotate by 180
-    set y2label 'NB ROUTES'  # Secondary y-axis label (y2)
+    set y2label 'NB ROUTES'
     unset key
     set style data histograms
-    set style histogram cluster gap 1 # clustered histogram style with 1 spacing between groups
+    set style histogram cluster gap 1
     set style fill solid border -1
     set boxwidth 1.6
-    set xtics rotate  # Rotates scale labels on x-axis
-    set y2tics rotate  # Rotates scale labels on secondary y-axis (y2)
+    set xtics rotate
+    set y2tics rotate
     set y2range [0:250]
     unset ytics;set y2tics mirror
     set datafile separator ";"
-    set title '10 drivers with most rides'
-    plot "temp/d1.temp" using 2:xtic(1) with boxxy lc var notitle
-EOFMarker
+    plot 'temp/d1.temp' using 2:xtic(1) axes x1y2 lc rgb "#61f2a2"
+EOF
+
+    convert -rotate 90 pictures/d1_output.png pictures/d1_output.png  # installer imagemagick
+
         
         echo -e "\nelapsed time for -d1: $SECONDS seconds"
         ;;
@@ -114,7 +116,7 @@ EOF
         end_time=$(date +%s.%N) #end the timer
 
         echo -e "\nelapsed time for -l: $SECONDS seconds" #la var SECONDS contient le temps écoulé (SECONDS="0" pour réinitialiser)
->>>>>>> f98a563cafe5ee718608d8619b827aa2d0bd7595
+
         ;;
 
     -t) #10 most crossed towns
