@@ -104,7 +104,6 @@ gnuplot << EOF
         set xtics rotate
         set y2tics rotate
         set y2range [0:160]
-        set size 0.1, 0.1
         unset ytics;set y2tics mirror
         set datafile separator ";"
         plot 'temp/d2.temp' using (\$2/1000):xtic(1) axes x1y2 lc rgb "#61f2a2"
