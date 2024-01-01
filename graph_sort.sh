@@ -151,6 +151,8 @@ EOF
         ;;
 
     -s) #min, max, averrage distances
+        cut -d';' -f1,5 data/data.csv |tail -n+2 > temp/s_data.temp
+        
         ;;
 
     *) echo "arg error : $i is not an option (-h for help)" ;;
