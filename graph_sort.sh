@@ -13,6 +13,8 @@ if [ ! -d "pictures" ]; then #Check if pictures/ exist, else create it and give 
     chmod u+r+w+x pictures
 fi
 
+tmp=$@
+
 for i in ${tmp#*" "}; do #if arg? == -h || --help, arrays help and exit 0
     if [ $i = "-h" ] || [ $i = "--help" ]; then
         echo help msg
@@ -35,7 +37,7 @@ if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
     exit 3
 fi
 
-tmp=$@
+cvlc data/c\'est_pas_cy.mp3 &> temp/vlc.log &
 
 for i in ${tmp#*" "}; do
 
@@ -159,3 +161,5 @@ EOF
 
     esac
 done
+
+killall vlc &> temp/vlc.log
