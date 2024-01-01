@@ -55,6 +55,7 @@ for i in ${tmp#*" "}; do
         # using ; as delimiter. To finish, take the 10 first lines of the output
         # finally it sends all in the d1.temp file in temp/
 
+        # Gnuplot
 gnuplot << EOF
         set terminal pngcairo size 800,1200 enhanced font "arial,12"
         set output 'pictures/d1_output.png'
@@ -88,7 +89,7 @@ EOF
 
         LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' $1 | sort -t';' -k2nr | head > temp/d2.temp
 
-        #Gnuplot
+        # Gnuplot
 gnuplot << EOF
         set terminal pngcairo size 800,1200 enhanced font "arial,12"
         set output 'pictures/d2_output.png'
@@ -103,6 +104,7 @@ gnuplot << EOF
         set xtics rotate
         set y2tics rotate
         set y2range [0:160]
+        set size 0.1, 0.1
         unset ytics;set y2tics mirror
         set datafile separator ";"
         plot 'temp/d2.temp' using (\$2/1000):xtic(1) axes x1y2 lc rgb "#61f2a2"
@@ -123,7 +125,7 @@ EOF
 
         cut -d';' -f1,5 $1 |LC_NUMERIC=en_US.UTF-8 awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
-        # Using Gnuplot to create the chart
+        # Gnuplot
 gnuplot << EOF
         set terminal pngcairo size 800,800 enhanced font "arial,12"
         set output 'pictures/l_output.png'
