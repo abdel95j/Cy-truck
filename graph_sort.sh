@@ -37,7 +37,7 @@ if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
     exit 3
 fi
 
-#cvlc data/c\'est_pas_cy.mp3 &> temp/vlc.log &
+cvlc data/c\'est_pas_cy.mp3 &> temp/vlc.log &
 
 for i in ${tmp#*" "}; do
 
@@ -83,7 +83,7 @@ EOF
         elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
 
         echo -e "\nelapsed time for -d1: $elapsed_time seconds"
-        display "pictures/d1_output.png"
+        display "pictures/d1_output.png" &> temp/display.log &
         ;;
 
     -d2) #10 drivers with longest distances
@@ -116,7 +116,7 @@ EOF
         elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
         
         echo -e "\nelapsed time for -d2: $elapsed_time seconds"
-        display "pictures/d2_output.png"
+        display "pictures/d2_output.png" &> temp/display.log &
         ;;
 
     -l) #10 longest rides
@@ -145,7 +145,7 @@ EOF
 
         elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
         echo -e "\nelapsed time for -l: $elapsed_time seconds" 
-        display "pictures/l_output.png"
+        display "pictures/l_output.png" &> temp/display.log &
 
         ;;
 
