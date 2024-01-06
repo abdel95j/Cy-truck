@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     float distance = -1;
     
     while(fscanf(file,"%d;%f",&ID,&distance) != EOF){
-        printf("%d %f\n",ID,distance);
+        printf("%d ; %f\n",ID,distance);
     }
 
     fclose(file);

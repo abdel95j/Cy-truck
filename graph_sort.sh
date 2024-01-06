@@ -23,7 +23,7 @@ for i in ${tmp#*" "}; do #if arg? == -h || --help, arrays help and exit 0
 done
 
 if (($# <= 1)); then #Check if at least 2 args
-    echo "no argument dected"
+    echo "arg error : no argument dected"
     exit 1
 fi
 
@@ -37,7 +37,7 @@ if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
     exit 3
 fi
 
-vlc -Idummy data/c\'est_pas_cy.mp3 &> temp/vlc.log &
+#vlc -Idummy data/c\'est_pas_cy.mp3 &> temp/vlc.log &
 
 for i in ${tmp#*" "}; do
 
@@ -152,6 +152,22 @@ EOF
     -t) #10 most crossed towns
         start_time=$(date +%s.%N) #start the timer
 
+        #cut à faire
+
+        cd progc/
+
+        if [ ! -e "t_progc" ];then 
+            make t_progc -s
+            
+            if [ ! -e "t_progc" ];then
+            echo "C error : Error while compiling t_progc"
+            exit 4
+            fi
+        fi
+
+        ./t_progc ../temp/t_data.temp
+        cd ..
+
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10" size 700,700
     set output 'pictures/t_output.png'
@@ -180,6 +196,21 @@ EOF
         start_time=$(date +%s.%N) #start the timer
        
         cut -d';' -f1,5 data/data.csv |tail -n+2 > temp/s_data.temp
+
+        cd progc/
+
+        if [ ! -e "s_progc" ];then 
+            make s_progc -s
+            
+            if [ ! -e "s_progc" ];then
+            echo "C error : Error while compiling s_progc"
+            exit 4
+            fi
+        fi
+
+        ./s_progc ../temp/s_data.temp
+        cd ..
+
         
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10" size 1100,800
