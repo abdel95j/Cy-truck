@@ -10,8 +10,8 @@ typedef struct _avl
     int min;
     float D_summ;
     int N_steps;
-    struct _avl1* fd;
-    struct _avl1* fg;
+    struct _avl* fd;
+    struct _avl* fg;
 }avl;
 
 float ret_max(float a,float b)
