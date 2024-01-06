@@ -196,3 +196,4 @@ done
 
 killall vlc &> temp/vlc.log
 rm temp/vlc.log
+rm temp/display.log
