@@ -37,7 +37,7 @@ if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
     exit 3
 fi
 
-cvlc data/c\'est_pas_cy.mp3 &> temp/vlc.log &
+#cvlc data/c\'est_pas_cy.mp3 &> temp/vlc.log &
 
 for i in ${tmp#*" "}; do
 
@@ -150,11 +150,43 @@ EOF
         ;;
 
     -t) #10 most crossed towns
-        ;;
+
+gnuplot << EOF
+    set terminal pngcairo enhanced font "arial,10" size 700,700
+    set output 'pictures/t_output.png'
+    set title "Option -t : Nb routes = f(Towns)"
+    set xlabel "TOWN NAMES"
+    set ylabel "NB ROUTES"
+    set xtics rotate by 45 right
+    set yrange [0:6000]
+    set style data histograms
+    set style histogram cluster gap 1
+    set style fill solid
+    set datafile separator ";"
+
+    plot 'data/t.sh' using 2:xtic(1) title "Total routes" lc rgb "#78E5AE", \
+     '' using 3 title "First town" lc rgb "#5DCA93"
+EOF
+
+       ;;
 
     -s) #min, max, averrage distances
         cut -d';' -f1,5 data/data.csv |tail -n+2 > temp/s_data.temp
         
+gnuplot << EOF
+    set terminal pngcairo enhanced font "arial,10" size 1100,800
+    set output 'pictures/s_output.png'
+    set title "Option -s : Distance = f(Route)"
+    set xlabel "ROUTE ID"
+    set ylabel "DISTANCE (Km)"
+    set xtics rotate by 45 right
+    set ytics 100
+    set yrange [0:1000]
+    set datafile separator ";"
+
+    plot ‘temp/s.temp using 0:3:5:xticlabels(2) with filledcurves lc rgb "#78E5AE" lt 1 title 'Distances Max (Km))', \
+     '' using 0:4 with lines lc rgb "#5DCA93" title 'Distance average (Km)'
+EOF
         ;;
 
     *) echo "arg error : $i is not an option (-h for help)" ;;
