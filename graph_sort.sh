@@ -176,25 +176,25 @@ EOF
 
         start_time=$(date +%s.%N) #restart the timer
 
-        ./t_progc ../temp/t_data.temp | head > ../temp/t.temp
+        ./t_progc ../temp/t_data.temp # > ../temp/t.temp
         cd ..
 
-gnuplot << EOF
-    set terminal pngcairo enhanced font "arial,10" size 700,700
-    set output 'pictures/t_output.png'
-    set title "Option -t : Nb routes = f(Towns)"
-    set xlabel "TOWN NAMES"
-    set ylabel "NB ROUTES"
-    set xtics rotate by 45 right
-    set yrange [0:6000]
-    set style data histograms
-    set style histogram cluster gap 1
-    set style fill solid
-    set datafile separator ";"
-
-    plot 'temp/t.temp' using 2:xtic(1) title "Total routes" lc rgb "#78E5AE", \
-     '' using 3 title "First town" lc rgb "#5DCA93"
-EOF
+#gnuplot << EOF
+#    set terminal pngcairo enhanced font "arial,10" size 700,700
+#    set output 'pictures/t_output.png'
+#    set title "Option -t : Nb routes = f(Towns)"
+#    set xlabel "TOWN NAMES"
+#    set ylabel "NB ROUTES"
+#    set xtics rotate by 45 right
+#    set yrange [0:6000]
+#    set style data histograms
+#    set style histogram cluster gap 1
+#    set style fill solid
+#    set datafile separator ";"
+#
+#    plot 'temp/t.temp' using 2:xtic(1) title "Total routes" lc rgb "#78E5AE", \
+#     '' using 3 title "First town" lc rgb "#5DCA93"
+#EOF
         end_time=$(date +%s.%N) #reend the timer
         elapsed_time2=$(echo "$end_time - $start_time" | bc) #take the second time
 
