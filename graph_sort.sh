@@ -197,20 +197,22 @@ EOF
        
         cut -d';' -f1,5 data/data.csv |tail -n+2 > temp/s_data.temp
 
+        end_time=$(date +%s.%N) #end the timer
+        elapsed_time1=$(echo "$end_time - $start_time" | bc) #take the first time
+
         cd progc/
 
-        if [ ! -e "s_progc" ];then 
-            make s_progc -s
-            
-            if [ ! -e "s_progc" ];then
-            echo "C error : Error while compiling s_progc"
-            exit 4
-            fi
+        make s_progc -s
+        
+        if [ ! -e "s_progc" ];then
+        echo "C error : Error while compiling s_progc"
+        exit 4
         fi
 
-        ./s_progc ../temp/s_data.temp
-        cd ..
+        start_time=$(date +%s.%N) #restart the timer
 
+        ./s_progc ../temp/s_data.temp | head -50 > ../temp/s.temp
+        cd ..
         
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10" size 1100,800
@@ -223,10 +225,14 @@ gnuplot << EOF
     set yrange [0:1000]
     set datafile separator ";"
 
-    plot ‘temp/s.temp using 0:3:5:xticlabels(2) with filledcurves lc rgb "#78E5AE" lt 1 title 'Distances Max (Km))', \
-     '' using 0:4 with lines lc rgb "#5DCA93" title 'Distance average (Km)'
+    plot 'temp/s.temp' using 0:3:5:xticlabels(2) with filledcurves lc rgb "#78E5AE" lt 1 title 'Distances Max (Km))', \
+     '' using 0:4 with lines lc rgb "#0D9F75" title 'Distance average (Km)'
 EOF
-        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+        end_time=$(date +%s.%N) #reend the timer
+        elapsed_time2=$(echo "$end_time - $start_time" | bc) #take the second time
+
+        elapsed_time=$(echo "$elapsed_time1 + $elapsed_time2" | bc) #calculate final time
+
         echo -e "\nelapsed time for -s: $elapsed_time seconds" 
         display "pictures/s_output.png" &> temp/display.log 
         ;;

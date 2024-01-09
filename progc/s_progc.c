@@ -232,17 +232,18 @@ void deletetree(pTree t){
     free(t);
 }
 
-void ecriture(pTree t){
+void ecriture(pTree t, int* putone){
     if(t == NULL){
         printf("empty tree\n");
     }
     else{
         if(hasrightchild(t)){
-            ecriture(t->fd);
+            ecriture(t->fd,putone);
         }
-        printf("%d;%f;%f;%f\n",t->key,t->min,t->D_summ/(t->N_steps *1.0),t->max);
+        printf("%d;%d;%f;%f;%f;%f\n",*putone,t->key,t->min,t->D_summ/(t->N_steps *1.0),t->max,t->max-t->min);
+        *putone=+1;
         if(hasleftchild(t)){
-            ecriture(t->fg);
+            ecriture(t->fg,putone);
         }
     }
 }
@@ -255,6 +256,7 @@ int main(int argc, char **argv) {
     
     int h = 10;
     int ID = -1;
+    int putone = 1;
     float distance = -1;
     pTree AVL1 = NULL;
     pTree AVL2 = NULL;
@@ -263,7 +265,7 @@ int main(int argc, char **argv) {
         AVL1 = insertAVL1(AVL1,ID,distance,&h);
     }
     AVL1toAVL2(AVL1,&AVL2,&h);
-    ecriture(AVL2);
+    ecriture(AVL2, &putone);
     deletetree(AVL2);
     deletetree(AVL1);
 
