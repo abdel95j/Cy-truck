@@ -4,8 +4,8 @@ if [ ! -d "temp" ]; then #Check if temp/ exist, else create it and give all acce
     mkdir temp
     chmod u+r+w+x temp
 
-elif [ -s "temp" ]; then #Check if temp is empty, else rm its content
-    rm -f -r -d temp/*
+elif [ -s "temp" ]; then #Check if temp/ is empty, else rm its content
+    rm -rf temp/*.temp
 fi
 
 if [ ! -d "pictures" ]; then #Check if pictures/ exist, else create it and give all acces
@@ -15,11 +15,19 @@ fi
 
 tmp=$@
 
-for i in ${tmp#*" "}; do #if arg? == -h || --help, arrays help and exit 0
-    if [ $i = "-h" ] || [ $i = "--help" ]; then
-        echo help msg
-        exit 0
-    fi
+for i in ${tmp#*" "}; do    #special options (will read the last you put)
+    case $i in
+        -h | --help)    #if arg? == -h || --help, arrays help and exit 0
+            echo help msg
+            exit 0 ;;
+
+        -c | --clean)   #if arg? == -c || --clean, cleans directories
+            cd temp ; rm -rf *.temp ; cd ..
+            cd progc ; rm -rf *_progc ; cd ..
+            cd pictures ; rm -rf *.png ; cd ..
+            echo clean succeded
+            exit 0;;
+    esac 
 done
 
 if (($# <= 1)); then #Check if at least 2 args
@@ -152,20 +160,23 @@ EOF
     -t) #10 most crossed towns
         start_time=$(date +%s.%N) #start the timer
 
-        #cut à faire
+        cut -d';' -f1,2,3,4 data/data.csv |tail -n+2 > temp/t_data.temp
+
+        end_time=$(date +%s.%N) #end the timer
+        elapsed_time1=$(echo "$end_time - $start_time" | bc) #take the first time
 
         cd progc/
 
-        if [ ! -e "t_progc" ];then 
-            make t_progc -s
-            
-            if [ ! -e "t_progc" ];then
-            echo "C error : Error while compiling t_progc"
-            exit 4
-            fi
+        make t_progc -s
+        
+        if [ ! -e "t_progc" ];then
+        echo "C error : Error while compiling t_progc"
+        exit 4
         fi
 
-        ./t_progc ../temp/t_data.temp
+        start_time=$(date +%s.%N) #restart the timer
+
+        ./t_progc ../temp/t_data.temp | head > ../temp/t.temp
         cd ..
 
 gnuplot << EOF
@@ -181,12 +192,13 @@ gnuplot << EOF
     set style fill solid
     set datafile separator ";"
 
-    plot 'data/t.sh' using 2:xtic(1) title "Total routes" lc rgb "#78E5AE", \
+    plot 'temp/t.temp' using 2:xtic(1) title "Total routes" lc rgb "#78E5AE", \
      '' using 3 title "First town" lc rgb "#5DCA93"
 EOF
-        end_time=$(date +%s.%N) #end the timer
+        end_time=$(date +%s.%N) #reend the timer
+        elapsed_time2=$(echo "$end_time - $start_time" | bc) #take the second time
 
-        elapsed_time=$(echo "$end_time - $start_time" | bc) #calculate the difference
+        elapsed_time=$(echo "$elapsed_time1 + $elapsed_time2" | bc) #calculate final time
         echo -e "\nelapsed time for -t: $elapsed_time seconds" 
         display "pictures/t_output.png" &> temp/display.log 
 
