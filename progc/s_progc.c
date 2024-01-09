@@ -248,7 +248,7 @@ void ecriture(pTree t){
 }
 
 int main(int argc, char **argv) {
-    //assert(argc==2);
+    assert(argc==2);
     //open file and check if it is okay
     FILE* file = fopen(argv[1], "r");
     assert(file!=NULL);
