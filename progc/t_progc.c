@@ -45,46 +45,6 @@ void copyarr(char source[], char destination[], int taille) {
     }
 }
 
-int isempty(pTree t){
-    return (t == NULL);
-}
-
-int hasleftchild(pTree t){
-    return (!isempty(t) && !isempty(t->fg));
-}
-
-int hasrightchild(pTree t){
-    return (!isempty(t) && !isempty(t->fd));
-}
-
-void deleterightchild(pTree t){
-    if(t != NULL && t->fd != NULL){
-        if(t->fd->fg != NULL){
-            deleteleftchild(t->fd);
-        }
-        if(t->fd->fd != NULL){
-            deleterightchild(t->fd);
-        }
-        pTree tmp = t->fd;
-        t->fd = NULL;
-        free(tmp);
-    }
-}
-
-void deleteleftchild(pTree t){
-    if(t != NULL && t->fg != NULL){
-        if(t->fg->fg != NULL){
-            deleteleftchild(t->fg);
-        }
-        if(t->fg->fd != NULL){
-            deleterightchild(t->fg);
-        }
-        pTree tmp = t->fg;
-        t->fg = NULL;
-        free(tmp);
-    }
-}
-
 int isemptyID(pTreeID t){
     return (t == NULL);
 }
@@ -125,15 +85,57 @@ void deleteleftchildID(pTreeID t){
     }
 }
 
-void deletetree(pTree t){
-    deleteleftchild(t);
-    deleterightchild(t);
-    free(t);
-}
-
 void deletetreeID(pTreeID t){
     deleteleftchildID(t);
     deleterightchildID(t);
+    free(t);
+}
+
+int isempty(pTree t){
+    return (t == NULL);
+}
+
+int hasleftchild(pTree t){
+    return (!isempty(t) && !isempty(t->fg));
+}
+
+int hasrightchild(pTree t){
+    return (!isempty(t) && !isempty(t->fd));
+}
+
+void deleterightchild(pTree t){
+    if(t != NULL && t->fd != NULL){
+        if(t->fd->fg != NULL){
+            deleteleftchild(t->fd);
+        }
+        if(t->fd->fd != NULL){
+            deleterightchild(t->fd);
+        }
+        pTree tmp = t->fd;
+        deletetreeID(t->fd->routes);
+        t->fd = NULL;
+        free(tmp);
+    }
+}
+
+void deleteleftchild(pTree t){
+    if(t != NULL && t->fg != NULL){
+        if(t->fg->fg != NULL){
+            deleteleftchild(t->fg);
+        }
+        if(t->fg->fd != NULL){
+            deleterightchild(t->fg);
+        }
+        pTree tmp = t->fg;
+        deletetreeID(t->fg->routes);
+        t->fg = NULL;
+        free(tmp);
+    }
+}
+
+void deletetree(pTree t){
+    deleteleftchild(t);
+    deleterightchild(t);
     free(t);
 }
 
@@ -266,7 +268,6 @@ int researchABRID(pTreeID t,int ID){
     return 1;
 }
 
-
 pTreeID createTreeID(int ID){
     pTreeID p = malloc(sizeof(TreeID));
     assert(p != NULL);
@@ -306,14 +307,14 @@ pTreeID insertTreeID(pTreeID t,int ID,int* h){
     return t;
 }
 
-pTree createTree1(char city[],int ID,int step,int pos,int* h){
+pTree createTree1(char tab[],int ID,int step,int pos,int* h){
     pTree p = malloc(sizeof(Tree));
     assert(p != NULL);
-    assert(city != NULL);
-    copyarr(city,p->city,51);
+    assert(tab != NULL);
+    copyarr(tab,p->city,51);
     p->routes = NULL;
     p->routes = insertTreeID(p->routes,ID,h);
-    if(step == 1 && pos == 1 && step!=0){
+    if(step == 1 && pos == 1){
         p->first_sum = 1;
     }
     else{
@@ -326,61 +327,34 @@ pTree createTree1(char city[],int ID,int step,int pos,int* h){
     return p;
 }
 
-pTree createTree2(pTree t1){
+pTree createTree2(pTree t){
+    assert(t != NULL);
     pTree p = malloc(sizeof(Tree));
     assert(p != NULL);
-
-    if (t1!=NULL)
-    {    
-        copyarr(t1->city,p->city,51);
-        
-        p->routes = NULL;
-        p->sum = t1->sum;
-        p->first_sum = t1->first_sum;
-        p->fd = NULL;
-        p->fg = NULL;
-        p->eq = 0;
-        return p;
-    }
-}
-
-pTree createTree3(char city[], int sum, int first_sum){
-    pTree p = malloc(sizeof(Tree));
-    assert(p != NULL);
-
-    copyarr(city,p->city,51);
-    p->sum=sum;
-    p->first_sum=first_sum;
-    p->eq=0;
-    p->routes=NULL;
-    p->fd=NULL;
-    p->fg=NULL;
-
+    copyarr(t->city,p->city,51);
+    p->first_sum = t->first_sum;
+    p->sum = t->sum;
+    p->routes = NULL;
+    p->fd = NULL;
+    p->fg = NULL;
+    p->eq = 0;
     return p;
 }
 
 pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
-    if(t == NULL)
-    {
+    if(t == NULL){
         *h1 = 1;
         return createTree1(town,ID,step,pos,h2);
     }
-
     int cmp = strcmp(town,t->city);
-
-    if(cmp > 0)
-    {
+    if(cmp > 0){
         t->fd = insertAVL1(t->fd,ID,step,town,pos,h1,h2);
     }
-
-    if(cmp < 0)
-    {
+    if(cmp < 0){
         t->fg = insertAVL1(t->fg,ID,step,town,pos,h1,h2);
         *h1 = -*h1;
     }
-
-    if(cmp == 0)
-    {
+    if(cmp == 0){
         if(step == 1 && pos ==1){
             t->first_sum = t->first_sum + 1;
         }
@@ -390,10 +364,8 @@ pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
         }
         *h1 = 0;
         return t;
-    }
-
-    if(*h1 != 0)
-    {
+        }
+    if(*h1 != 0){
         t->eq = t->eq + *h1;
         t = equilibrageAVL(t);
         if(t->eq == 0){
@@ -407,148 +379,69 @@ pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
 }
 
 pTree insertAVL2(pTree t1,pTree t2,int* h){
-    if(t2 == NULL)
-    {
+    if(t2 == NULL){
         *h = 1;
         return createTree2(t1);
     }
-
-    if(t2->sum < t1->sum)
-    {
+    if(t1->sum > t2->sum){
         t2->fd = insertAVL2(t1,t2->fd,h);
     }
-
-    if (t2->sum > t1->sum)
-    {
+    if(t1->sum < t2->sum){
         t2->fg = insertAVL2(t1,t2->fg,h);
         *h = -*h;
     }
-
-    else
-    {
+    else{
         *h = 0;
         return t2;
-    }
-
+        }
     if(*h != 0){
         t2->eq = t2->eq + *h;
         t2 = equilibrageAVL(t2);
-        if(t2->eq == 0)
-        {
-            *h = 0;
-        }
-
-        else
-        {
-            *h = 1;
-        }
-    }
-
-    return t2;
-}
-
-pTree insertAVL3(pTree t2,pTree t3,int* h){
-    if(t3 == NULL)
-    {
-        *h = 1;
-        return createTree2(t2);
-    }
-
-    int cmp = strcmp(t2->city,t3->city);
-    
-    if(cmp>0)
-    {
-        t3->fd = insertAVL3(t2,t3->fd,h);
-    }
-
-    if (cmp<0)
-    {
-        t3->fg = insertAVL3(t2,t3->fg,h);
-        *h = -*h;
-    }
-
-    else
-    {
-        *h = 0;
-        return t3;
-    }
-
-    if(*h != 0){
-        t3->eq = t3->eq + *h;
-        t3 = equilibrageAVL(t3);
-        if(t3->eq == 0)
-        {
-            *h = 0;
-        }
-
-        else
-        {
-            *h = 1;
-        }
-    }
-
-    return t3;
-}
-
-pTree insertAVLfile(pTree t,char tempT[], int tempS, int tempFS, int *h){
-    if(t == NULL)
-    {
-        *h = 1;
-        return createTree3(tempT,tempS,tempFS);
-    }
-
-    int cmp = strcmp(tempT,t->city);
-
-    if(cmp > 0)
-    {
-        t->fd = insertAVLfile(t->fd, tempT, tempS, tempFS, h);
-    }
-
-    if(cmp < 0)
-    {
-        t->fg = insertAVLfile(t->fg, tempT, tempS, tempFS, h);
-        *h = -*h;
-    }
-
-    else
-    {
-        *h = 0;
-        return t;
-    }
-
-    if(*h != 0)
-    {
-        t->eq = t->eq + *h;
-        t = equilibrageAVL(t);
-        if(t->eq == 0){
+        if(t2->eq == 0){
             *h = 0;
         }
         else{
             *h = 1;
         }
     }
-    return t;
+    return t2;
+}
+
+pTree insertAVL3(pTree t1,pTree t2,int* h){
+    if(t2 == NULL){
+        *h = 1;
+        return createTree2(t1);
+    }
+    int cmp = strcmp(t1->city,t2->city);
+    if(cmp > 0){
+        t2->fd = insertAVL3(t1,t2->fd,h);
+    }
+    if(cmp < 0){
+        t2->fg = insertAVL3(t1,t2->fg,h);
+        *h = -*h;
+    }
+    else{
+        *h = 0;
+        return t2;
+        }
+    if(*h != 0){
+        t2->eq = t2->eq + *h;
+        t2 = equilibrageAVL(t2);
+        if(t2->eq == 0){
+            *h = 0;
+        }
+        else{
+            *h = 1;
+        }
+    }
+    return t2;
 }
 
 void AVL1toAVL2(pTree t1,pTree* t2,int* h){
     if(t1 != NULL){
         *t2 = insertAVL2(t1,*t2,h);
-        AVL1toAVL2(t1->fd,t2,h);
-        AVL1toAVL2(t1->fg,t2,h);
-    }
-}
-
-void temptoAVL3(FILE* read, pTree *t3, int* h){
-    assert(read!=NULL);
-
-    char tempT[51];
-    int tempS;
-    int tempFS;
-
-    for (int i = 0; i < 10; i++)
-    {
-        fscanf(read,"%50[^;];%d;%d[^\n]",tempT,&tempS,&tempFS);
-        *t3=insertAVLfile(*t3,tempT,tempS,tempFS,h);
+    AVL1toAVL2(t1->fd,t2,h);
+    AVL1toAVL2(t1->fg,t2,h);
     }
 }
 
@@ -572,32 +465,31 @@ void ecriture(pTree t){
         printf("empty tree\n");
     }
     else{
-        if(hasrightchild(t)){
-            ecriture(t->fd);
-        }
-        printf("%s;%d;%d",t->city,t->sum,t->first_sum);
-        //ecritureID(t->routes);
         if(hasleftchild(t)){
             ecriture(t->fg);
+        }
+        
+        printf("%s;%d;%d\n",t->city,t->sum,t->first_sum);
+        
+        if(hasrightchild(t)){
+            ecriture(t->fd);
         }
     }
 }
 
-void write_file(FILE *write, pTree t2)
-{
-        if (hasrightchild(t2))
-        {
-            write_file(write,t2->fd);
-        }
-        
-        fprintf(write,"%s;%d;%d\n",t2->city,t2->sum,t2->first_sum);
-        
-        if (hasleftchild(t2))
-        {
-            write_file(write,t2->fg);
-        }
+void AVL2toAVL3(pTree t2,pTree* t3,int* h,int* count){
+    assert(t2 != NULL);
+    if(hasrightchild(t2) && *count < 10){
+        AVL2toAVL3(t2->fd,t3,h,count);
+    }
+    if(*count < 10){
+        *t3 = insertAVL3(t2,*t3,h);
+        *count = *count + 1;
+    }
+    if(hasleftchild(t2) && *count < 10){
+        AVL2toAVL3(t2->fg,t3,h,count);
+    }
 }
-
 
 int main(int argc, char **argv) {
     assert(argc==2);
@@ -609,6 +501,7 @@ int main(int argc, char **argv) {
     int h2 = 10;
     int ID = -1;
     int step = -1;
+    int count = 0;
     char townA[51];
     char townB[51];
     pTree AVL1 = NULL;
@@ -616,34 +509,17 @@ int main(int argc, char **argv) {
     pTree AVL3 = NULL;
     
     while(fscanf(file,"%d;%d;%50[^;];%50[^;\n]",&ID,&step,townA,townB) != EOF){
-        //printf("%d,%d,%s,%s\n",ID,step,townA,townB);
-        AVL1 = insertAVL1(AVL1,ID,step,townA,1,&h1,&h2); // 1 refers to town A in the code
-        AVL1 = insertAVL1(AVL1,ID,step,townB,2,&h1,&h2); // 2 refers to town B in the code
+        AVL1 = insertAVL1(AVL1,ID,step,townA,1,&h1,&h2);
+        AVL1 = insertAVL1(AVL1,ID,step,townB,2,&h1,&h2);
     }
-    
-    h1 = 10;
     AVL1toAVL2(AVL1,&AVL2,&h1);
+    AVL2toAVL3(AVL2,&AVL3,&h2,&count);
+    ecriture(AVL3);
+    deletetree(AVL2);
+    deletetree(AVL1);
+    deletetree(AVL3);
 
     fclose(file);
 
-    FILE* write = fopen("../temp/t_sort.temp", "w");
-    assert(write!=NULL);
-    
-    int count = 0;
-
-    write_file(write,AVL2);
-    fclose(write);
-
-    FILE* read = fopen("../temp/t_sort.temp", "r");
-
-    h1 = 10;
-    temptoAVL3(read,&AVL3,&h1);
-
-    ecriture(AVL3);
-    //deletetree(AVL2);
-    //deletetree(AVL1);
-
-    fclose(read);
-
-    return 0;
+    return 0; 
 }
