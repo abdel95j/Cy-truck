@@ -12,7 +12,9 @@ You'll need 3 additional programs to run correctly graph_sort.sh
 1 : imagemagick   2 : vlc     3 : gnuplot
 
 Mac : brew install imagemagick | Ubuntu : sudo apt install imagemagick
+
       brew install --cask vlc  |          sudo apt install vlc
+      
       brew install gnuplot     |          sudo apt-get install gnuplot
 
 ----------------------------------------------------
