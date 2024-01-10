@@ -3,27 +3,31 @@
 #include <assert.h>
 #include <string.h>
 
+//Defining struct to stock ID in avl
 typedef struct _avlID{
     int ID;
-    int eq;
-    struct _avlID* fd;
-    struct _avlID* fg;
+    int balance;
+    struct _avlID* rc;
+    struct _avlID* lc;
 }TreeID;
 
+//Defining struct avl
 typedef struct _avl
 {
     char city[51];
     int sum;
     int first_sum;
-    TreeID* routes;
-    struct _avl * fd;
-    struct _avl * fg;
-    int eq;
+    TreeID* roads;
+    struct _avl * rc;
+    struct _avl * lc;
+    int balance;
 }Tree;
 
+//Defining aliases to use pointers easily
 typedef TreeID* pTreeID;
 typedef Tree* pTree;
 
+//calling function prototypes to use them before
 void deleteleftchildID(pTreeID t);
 void deleterightchildID(pTreeID t);
 void deleteleftchild(pTree t);
@@ -39,8 +43,9 @@ float min(float a,float b)
     return (a<b) ? a:b;
 }
 
-void copyarr(char source[], char destination[], int taille) {
-    for (int i = 0; i < taille; i++) {
+//copy an arr from source to destination
+void copyarr(char source[], char destination[], int size) {
+    for (int i = 0; i < size; i++) {
         destination[i] = source[i];
     }
 }
@@ -50,37 +55,37 @@ int isemptyID(pTreeID t){
 }
 
 int hasleftchildID(pTreeID t){
-    return (!isemptyID(t) && !isemptyID(t->fg));
+    return (!isemptyID(t) && !isemptyID(t->lc));
 }
 
 int hasrightchildID(pTreeID t){
-    return (!isemptyID(t) && !isemptyID(t->fd));
+    return (!isemptyID(t) && !isemptyID(t->rc));
 }
 
 void deleterightchildID(pTreeID t){
-    if(t != NULL && t->fd != NULL){
-        if(t->fd->fg != NULL){
-            deleteleftchildID(t->fd);
+    if(t != NULL && t->rc != NULL){
+        if(t->rc->lc != NULL){
+            deleteleftchildID(t->rc);
         }
-        if(t->fd->fd != NULL){
-            deleterightchildID(t->fd);
+        if(t->rc->rc != NULL){
+            deleterightchildID(t->rc);
         }
-        pTreeID tmp = t->fd;
-        t->fd = NULL;
+        pTreeID tmp = t->rc;
+        t->rc = NULL;
         free(tmp);
     }
 }
 
 void deleteleftchildID(pTreeID t){
-    if(t != NULL && t->fg != NULL){
-        if(t->fg->fg != NULL){
-            deleteleftchildID(t->fg);
+    if(t != NULL && t->lc != NULL){
+        if(t->lc->lc != NULL){
+            deleteleftchildID(t->lc);
         }
-        if(t->fg->fd != NULL){
-            deleterightchildID(t->fg);
+        if(t->lc->rc != NULL){
+            deleterightchildID(t->lc);
         }
-        pTreeID tmp = t->fg;
-        t->fg = NULL;
+        pTreeID tmp = t->lc;
+        t->lc = NULL;
         free(tmp);
     }
 }
@@ -96,39 +101,39 @@ int isempty(pTree t){
 }
 
 int hasleftchild(pTree t){
-    return (!isempty(t) && !isempty(t->fg));
+    return (!isempty(t) && !isempty(t->lc));
 }
 
 int hasrightchild(pTree t){
-    return (!isempty(t) && !isempty(t->fd));
+    return (!isempty(t) && !isempty(t->rc));
 }
 
 void deleterightchild(pTree t){
-    if(t != NULL && t->fd != NULL){
-        if(t->fd->fg != NULL){
-            deleteleftchild(t->fd);
+    if(t != NULL && t->rc != NULL){
+        if(t->rc->lc != NULL){
+            deleteleftchild(t->rc);
         }
-        if(t->fd->fd != NULL){
-            deleterightchild(t->fd);
+        if(t->rc->rc != NULL){
+            deleterightchild(t->rc);
         }
-        pTree tmp = t->fd;
-        deletetreeID(t->fd->routes);
-        t->fd = NULL;
+        pTree tmp = t->rc;
+        deletetreeID(t->rc->roads);
+        t->rc = NULL;
         free(tmp);
     }
 }
 
 void deleteleftchild(pTree t){
-    if(t != NULL && t->fg != NULL){
-        if(t->fg->fg != NULL){
-            deleteleftchild(t->fg);
+    if(t != NULL && t->lc != NULL){
+        if(t->lc->lc != NULL){
+            deleteleftchild(t->lc);
         }
-        if(t->fg->fd != NULL){
-            deleterightchild(t->fg);
+        if(t->lc->rc != NULL){
+            deleterightchild(t->lc);
         }
-        pTree tmp = t->fg;
-        deletetreeID(t->fg->routes);
-        t->fg = NULL;
+        pTree tmp = t->lc;
+        deletetreeID(t->lc->roads);
+        t->lc = NULL;
         free(tmp);
     }
 }
@@ -136,158 +141,162 @@ void deleteleftchild(pTree t){
 void deletetree(pTree t){
     deleteleftchild(t);
     deleterightchild(t);
+    deletetreeID(t->roads);
     free(t);
 }
 
-pTree rotationdroite(pTree t){
+pTree righturn(pTree t){
     pTree pivot;
     int eq_a,eq_p;
-    pivot = t->fg;
-    t->fg = pivot->fd;
-    pivot->fd = t;
-    eq_a = t->eq;
-    eq_p = pivot->eq;
-    t->eq = eq_a - min(eq_p,0)+1;
-    pivot->eq = max(max(eq_a+2,eq_a+eq_p+2),eq_p+1);
+    pivot = t->lc;
+    t->lc = pivot->rc;
+    pivot->rc = t;
+    eq_a = t->balance;
+    eq_p = pivot->balance;
+    t->balance = eq_a - min(eq_p,0)+1;
+    pivot->balance = max(max(eq_a+2,eq_a+eq_p+2),eq_p+1);
     t = pivot;
     return t;
 }
 
-pTree rotationgauche(pTree t){
+pTree leftturn(pTree t){
     pTree pivot;
     int eq_a,eq_p;
-    pivot = t->fd;
-    t->fd = pivot->fg;
-    pivot->fg = t;
-    eq_a = t->eq;
-    eq_p = pivot->eq;
-    t->eq = eq_a - max(eq_p,0)-1;
-    pivot->eq = min(min(eq_a-2,eq_a+eq_p-2),eq_p-1);
+    pivot = t->rc;
+    t->rc = pivot->lc;
+    pivot->lc = t;
+    eq_a = t->balance;
+    eq_p = pivot->balance;
+    t->balance = eq_a - max(eq_p,0)-1;
+    pivot->balance = min(min(eq_a-2,eq_a+eq_p-2),eq_p-1);
     t = pivot;
     return t;
 }
 
-pTree doublerotationgauche(pTree t){
-    t->fd = rotationdroite(t->fd);
-    return rotationgauche(t);
+pTree right_left(pTree t){
+    t->rc = righturn(t->rc);
+    return leftturn(t);
 }
 
-pTree doublerotationdroite(pTree t){
-    t->fg = rotationgauche(t->fg);
-    return rotationdroite(t);
+pTree left_right(pTree t){
+    t->lc = leftturn(t->lc);
+    return righturn(t);
 }
 
-pTree equilibrageAVL(pTree t){
-    if(t->eq >= 2){
-        if(t->fd->eq >= 0){
-            return rotationgauche(t);
+pTree balanceAVL(pTree t){
+    if(t->balance >= 2){
+        if(t->rc->balance >= 0){
+            return leftturn(t);
         }
         else{
-            return doublerotationgauche(t);
+            return right_left(t);
         }
     }
-    else if(t->eq <= -2){
-        if(t->fg->eq <= 0){
-            return rotationdroite(t);
+    else if(t->balance <= -2){
+        if(t->lc->balance <= 0){
+            return righturn(t);
         }
         else{
-            return doublerotationdroite(t);
+            return left_right(t);
         }
     }
     return t;
 }
 
-pTreeID rotationdroiteID(pTreeID t){
+pTreeID rightturnI(pTreeID t){
     pTreeID pivot;
     int eq_a,eq_p;
-    pivot = t->fg;
-    t->fg = pivot->fd;
-    pivot->fd = t;
-    eq_a = t->eq;
-    eq_p = pivot->eq;
-    t->eq = eq_a - min(eq_p,0)+1;
-    pivot->eq = max(max(eq_a+2,eq_a+eq_p+2),eq_p+1);
+    pivot = t->lc;
+    t->lc = pivot->rc;
+    pivot->rc = t;
+    eq_a = t->balance;
+    eq_p = pivot->balance;
+    t->balance = eq_a - min(eq_p,0)+1;
+    pivot->balance = max(max(eq_a+2,eq_a+eq_p+2),eq_p+1);
     t = pivot;
     return t;
 }
 
-pTreeID rotationgaucheID(pTreeID t){
+pTreeID leftturnID(pTreeID t){
     pTreeID pivot;
     int eq_a,eq_p;
-    pivot = t->fd;
-    t->fd = pivot->fg;
-    pivot->fg = t;
-    eq_a = t->eq;
-    eq_p = pivot->eq;
-    t->eq = eq_a - max(eq_p,0)-1;
-    pivot->eq = min(min(eq_a-2,eq_a+eq_p-2),eq_p-1);
+    pivot = t->rc;
+    t->rc = pivot->lc;
+    pivot->lc = t;
+    eq_a = t->balance;
+    eq_p = pivot->balance;
+    t->balance = eq_a - max(eq_p,0)-1;
+    pivot->balance = min(min(eq_a-2,eq_a+eq_p-2),eq_p-1);
     t = pivot;
     return t;
 }
 
-pTreeID doublerotationgaucheID(pTreeID t){
-    t->fd = rotationdroiteID(t->fd);
-    return rotationgaucheID(t);
+pTreeID right_leftID(pTreeID t){
+    t->rc = rightturnI(t->rc);
+    return leftturnID(t);
 }
 
-pTreeID doublerotationdroiteID(pTreeID t){
-    t->fg = rotationgaucheID(t->fg);
-    return rotationdroiteID(t);
+pTreeID left_rightID(pTreeID t){
+    t->lc = leftturnID(t->lc);
+    return rightturnI(t);
 }
 
-pTreeID equilibrageAVLID(pTreeID t){
-    if(t->eq >= 2){
-        if(t->fd->eq >= 0){
-            return rotationgaucheID(t);
+pTreeID balanceAVLID(pTreeID t){
+    if(t->balance >= 2){
+        if(t->rc->balance >= 0){
+            return leftturnID(t);
         }
         else{
-            return doublerotationgaucheID(t);
+            return right_leftID(t);
         }
     }
-    else if(t->eq <= -2){
-        if(t->fg->eq <= 0){
-            return rotationdroiteID(t);
+    else if(t->balance <= -2){
+        if(t->lc->balance <= 0){
+            return rightturnI(t);
         }
         else{
-            return doublerotationdroiteID(t);
+            return left_rightID(t);
         }
     }
     return t;
 }
 
+// function that check if a city is a starting town / returns a 1 if true else 0.
 int researchABRID(pTreeID t,int ID){
     if(t == NULL){
         return 0;
     }
     if(ID > t->ID){
-        return researchABRID(t->fd ,ID);
+        return researchABRID(t->rc ,ID);
     }
     if(ID < t->ID){
-        return researchABRID(t->fg ,ID);
+        return researchABRID(t->lc ,ID);
     }
     return 1;
 }
 
+//function createTree for the id avl
 pTreeID createTreeID(int ID){
     pTreeID p = malloc(sizeof(TreeID));
     assert(p != NULL);
     p->ID = ID;
-    p->fd = NULL;
-    p->fg = NULL;
-    p->eq = 0;
+    p->rc = NULL;
+    p->lc = NULL;
+    p->balance = 0;
     return p;
 }
 
+//function insertTree for the id avl (with sort by ID)
 pTreeID insertTreeID(pTreeID t,int ID,int* h){
     if(t == NULL){
         *h = 1;
         return createTreeID(ID);
     }
     if(ID > t->ID){
-        t->fd = insertTreeID(t->fd,ID,h);
+        t->rc = insertTreeID(t->rc,ID,h);
     }
     if(ID < t->ID){
-        t->fg = insertTreeID(t->fg,ID,h);
+        t->lc = insertTreeID(t->lc,ID,h);
         *h = -*h;
     }
     if(ID == t->ID){
@@ -295,9 +304,9 @@ pTreeID insertTreeID(pTreeID t,int ID,int* h){
         return t;
         }
     if(*h != 0){
-        t->eq = t->eq + *h;
-        t = equilibrageAVLID(t);
-        if(t->eq == 0){
+        t->balance = t->balance + *h;
+        t = balanceAVLID(t);
+        if(t->balance == 0){
             *h = 0;
         }
         else{
@@ -307,13 +316,14 @@ pTreeID insertTreeID(pTreeID t,int ID,int* h){
     return t;
 }
 
-pTree createTree1(char tab[],int ID,int step,int pos,int* h){
+// createTree function for the first avl 
+pTree createTree1(char town[],int ID,int step,int pos,int* h){
     pTree p = malloc(sizeof(Tree));
     assert(p != NULL);
-    assert(tab != NULL);
-    copyarr(tab,p->city,51);
-    p->routes = NULL;
-    p->routes = insertTreeID(p->routes,ID,h);
+    assert(town != NULL);
+    copyarr(town,p->city,51);
+    p->roads = NULL;
+    p->roads = insertTreeID(p->roads,ID,h);
     if(step == 1 && pos == 1){
         p->first_sum = 1;
     }
@@ -321,9 +331,9 @@ pTree createTree1(char tab[],int ID,int step,int pos,int* h){
         p->first_sum = 0;
     }
     p->sum = 1;
-    p->fd = NULL;
-    p->fg = NULL;
-    p->eq = 0;
+    p->rc = NULL;
+    p->lc = NULL;
+    p->balance = 0;
     return p;
 }
 
@@ -334,13 +344,14 @@ pTree createTree2(pTree t){
     copyarr(t->city,p->city,51);
     p->first_sum = t->first_sum;
     p->sum = t->sum;
-    p->routes = NULL;
-    p->fd = NULL;
-    p->fg = NULL;
-    p->eq = 0;
+    p->roads = NULL;
+    p->rc = NULL;
+    p->lc = NULL;
+    p->balance = 0;
     return p;
 }
 
+//function insertTree for avl1 with alphabetical sort (by town)
 pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
     if(t == NULL){
         *h1 = 1;
@@ -348,27 +359,29 @@ pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
     }
     int cmp = strcmp(town,t->city);
     if(cmp > 0){
-        t->fd = insertAVL1(t->fd,ID,step,town,pos,h1,h2);
+        t->rc = insertAVL1(t->rc,ID,step,town,pos,h1,h2);
     }
     if(cmp < 0){
-        t->fg = insertAVL1(t->fg,ID,step,town,pos,h1,h2);
+        t->lc = insertAVL1(t->lc,ID,step,town,pos,h1,h2);
         *h1 = -*h1;
     }
     if(cmp == 0){
+        // if it's a starting town and it's a "(Town A) == 1"
         if(step == 1 && pos ==1){
             t->first_sum = t->first_sum + 1;
         }
-        if(researchABRID(t->routes,ID) == 0){
+        // if researchABRID == 0 it means that it's a starting town
+        if(researchABRID(t->roads,ID) == 0){
             t->sum = t->sum + 1;
-            t->routes = insertTreeID(t->routes,ID,h2);
+            t->roads = insertTreeID(t->roads,ID,h2);
         }
         *h1 = 0;
         return t;
         }
     if(*h1 != 0){
-        t->eq = t->eq + *h1;
-        t = equilibrageAVL(t);
-        if(t->eq == 0){
+        t->balance = t->balance + *h1;
+        t = balanceAVL(t);
+        if(t->balance == 0){
             *h1 = 0;
         }
         else{
@@ -378,16 +391,17 @@ pTree insertAVL1(pTree t,int ID,int step,char* town,int pos,int* h1,int* h2){
     return t;
 }
 
+//function insertTree for the avl2 with sort by crossed count
 pTree insertAVL2(pTree t1,pTree t2,int* h){
     if(t2 == NULL){
         *h = 1;
         return createTree2(t1);
     }
     if(t1->sum > t2->sum){
-        t2->fd = insertAVL2(t1,t2->fd,h);
+        t2->rc = insertAVL2(t1,t2->rc,h);
     }
     if(t1->sum < t2->sum){
-        t2->fg = insertAVL2(t1,t2->fg,h);
+        t2->lc = insertAVL2(t1,t2->lc,h);
         *h = -*h;
     }
     else{
@@ -395,9 +409,9 @@ pTree insertAVL2(pTree t1,pTree t2,int* h){
         return t2;
         }
     if(*h != 0){
-        t2->eq = t2->eq + *h;
-        t2 = equilibrageAVL(t2);
-        if(t2->eq == 0){
+        t2->balance = t2->balance + *h;
+        t2 = balanceAVL(t2);
+        if(t2->balance == 0){
             *h = 0;
         }
         else{
@@ -407,6 +421,7 @@ pTree insertAVL2(pTree t1,pTree t2,int* h){
     return t2;
 }
 
+//function insertTree for the avl3 sort by towns alphabetically
 pTree insertAVL3(pTree t1,pTree t2,int* h){
     if(t2 == NULL){
         *h = 1;
@@ -414,20 +429,20 @@ pTree insertAVL3(pTree t1,pTree t2,int* h){
     }
     int cmp = strcmp(t1->city,t2->city);
     if(cmp > 0){
-        t2->fd = insertAVL3(t1,t2->fd,h);
+        t2->rc = insertAVL3(t1,t2->rc,h);
     }
     if(cmp < 0){
-        t2->fg = insertAVL3(t1,t2->fg,h);
+        t2->lc = insertAVL3(t1,t2->lc,h);
         *h = -*h;
     }
     else{
         *h = 0;
         return t2;
-        }
+    }
     if(*h != 0){
-        t2->eq = t2->eq + *h;
-        t2 = equilibrageAVL(t2);
-        if(t2->eq == 0){
+        t2->balance = t2->balance + *h;
+        t2 = balanceAVL(t2);
+        if(t2->balance == 0){
             *h = 0;
         }
         else{
@@ -437,63 +452,50 @@ pTree insertAVL3(pTree t1,pTree t2,int* h){
     return t2;
 }
 
+//Convert AVL1 (avl with all the first datas) to AVL2 (avl with all the towns, their crossed count and their "first town of traject" count)
 void AVL1toAVL2(pTree t1,pTree* t2,int* h){
     if(t1 != NULL){
         *t2 = insertAVL2(t1,*t2,h);
-    AVL1toAVL2(t1->fd,t2,h);
-    AVL1toAVL2(t1->fg,t2,h);
+        AVL1toAVL2(t1->rc,t2,h);
+        AVL1toAVL2(t1->lc,t2,h);
     }
 }
 
-void ecritureID(pTreeID t){
-    if(t == NULL){
-        printf("empty tree\n");
-    }
-    else{
-        if(hasrightchildID(t)){
-            ecritureID(t->fd);
-        }
-        printf("%d-",t->ID);
-        if(hasleftchildID(t)){
-            ecritureID(t->fg);
-        }
-    }
-}
-
-void ecriture(pTree t){
+void arrAVL(pTree t){
     if(t == NULL){
         printf("empty tree\n");
     }
     else{
         if(hasleftchild(t)){
-            ecriture(t->fg);
+            arrAVL(t->lc);
         }
         
         printf("%s;%d;%d\n",t->city,t->sum,t->first_sum);
         
         if(hasrightchild(t)){
-            ecriture(t->fd);
+            arrAVL(t->rc);
         }
     }
 }
 
+//Convert AVL2 (avl with all the towns, their crossed count and their "first town of traject" count) to AVL3 (AVL with the 10 most crossed towns sorted alphabetically) 
 void AVL2toAVL3(pTree t2,pTree* t3,int* h,int* count){
     assert(t2 != NULL);
     if(hasrightchild(t2) && *count < 10){
-        AVL2toAVL3(t2->fd,t3,h,count);
+        AVL2toAVL3(t2->rc,t3,h,count);
     }
     if(*count < 10){
         *t3 = insertAVL3(t2,*t3,h);
         *count = *count + 1;
     }
     if(hasleftchild(t2) && *count < 10){
-        AVL2toAVL3(t2->fg,t3,h,count);
+        AVL2toAVL3(t2->lc,t3,h,count);
     }
 }
 
 int main(int argc, char **argv) {
     assert(argc==2);
-    //open file and check if it is okay
+    //open file and check if it did well
     FILE* file = fopen(argv[1], "r");
     assert(file!=NULL);
     
@@ -514,7 +516,7 @@ int main(int argc, char **argv) {
     }
     AVL1toAVL2(AVL1,&AVL2,&h1);
     AVL2toAVL3(AVL2,&AVL3,&h2,&count);
-    ecriture(AVL3);
+    arrAVL(AVL3);
     deletetree(AVL2);
     deletetree(AVL1);
     deletetree(AVL3);

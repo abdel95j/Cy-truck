@@ -18,9 +18,19 @@ tmp=$@
 for i in ${tmp#*" "}; do    #special options (will read the last you put)
     case $i in
         -h | --help)    #if arg? == -h || --help, arrays help and exit 0
-            echo help msg
+            echo -e "Usage : ./graph_sort.sh [FILE.csv] [OPTION]\n"
+            echo -e "FILE has to be a .csv file using the right format. \n Format : Route ID;Step ID;Town A;Town B;Distance;Driver name \n"
+            echo -e "Available options:\n"
+            echo -e " -d1 :        Gets the 10 drivers with the most ammount of drives and arrays a horizontal\n              histogram graph\n\n"
+            echo -e " -d2 :        Gets the 10 drivers with the longest total distances crossed and arrays a\n              horizontal histogram graph\n\n"
+            echo -e " -l  :        Gets the 10 longest roads and arrays a vertical histogram graph\n\n\n"
+            echo -e " -t  :        Gets the 10 most crossed towns and arrays vertical histogram graph with the\n              ammount of crossing and the number of time when the town is a departure city\n              of a road\n\n"
+            echo -e " -s  :        Gets the min, max and averrage distance of every road. Keeps the 50 highest\n              sorted by (max - min) and arrays a min-max-av graph\n\n"
+            echo -e " -c | --clean :    Cleans the directory by removing temp files, pictures files and c\n                   executables in progc and exit\n\n"
+            echo -e " -h | --help  :    Arrays help and exit\n"
+            
             exit 0 ;;
-
+        
         -c | --clean)   #if arg? == -c || --clean, cleans directories
             cd temp ; rm -rf *.temp ; cd ..
             cd progc ; rm -rf *_progc ; cd ..
@@ -45,7 +55,9 @@ if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
     exit 3
 fi
 
-#vlc -Idummy data/c\'est_pas_cy.mp3 &> temp/vlc.log &
+echo "starting epîc music ..."
+sleep 1
+vlc -Idummy data/c\'est_pas_cy.mp3 &> temp/vlc.log &
 
 for i in ${tmp#*" "}; do
 
@@ -54,6 +66,8 @@ for i in ${tmp#*" "}; do
     -d1) #10 drivers with most Nrides
         start_time=$(date +%s.%N) #start the timer
         
+        echo "getting the 10 drivers with the most rides ..."
+
         #awk part
 
         cut -d';' -f1,6 "$1" |awk -F';' '!arr[$1]++ {arr2[$2]++} END {for (i in arr2) printf "%s;%d\n",i,arr2[i]}' | sort -t';' -k2nr | head > temp/d1.temp
@@ -97,6 +111,10 @@ EOF
     -d2) #10 drivers with longest distances
         start_time=$(date +%s.%N) #start the timer
 
+        echo "getting the 10 drivers with the longest distances ..."
+
+        #awk part
+
         LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' $1 | sort -t';' -k2nr | head > temp/d2.temp
 
         # Gnuplot
@@ -127,9 +145,11 @@ EOF
         display "pictures/d2_output.png" &> temp/display.log 
         ;;
 
-    -l) #10 longest rides
+    -l) #10 longest roads
         start_time=$(date +%s.%N) #start the timer
        
+        echo "getting the 10 longest rides ..."
+
         #awk part
 
         cut -d';' -f1,5 $1 |LC_NUMERIC=en_US.UTF-8 awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
@@ -160,10 +180,16 @@ EOF
     -t) #10 most crossed towns
         start_time=$(date +%s.%N) #start the timer
 
+        echo "getting the 10 most crossed towns ..."
+
+        #cut part
+
         cut -d';' -f1,2,3,4 data/data.csv |tail -n+2 > temp/t_data.temp
 
         end_time=$(date +%s.%N) #end the timer
         elapsed_time1=$(echo "$end_time - $start_time" | bc) #take the first time
+
+        #c part
 
         cd progc/
 
@@ -178,7 +204,8 @@ EOF
 
         ./t_progc ../temp/t_data.temp > ../temp/t.temp
         cd ..
-
+        
+        # Gnuplot
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10" size 700,700
     set output 'pictures/t_output.png'
@@ -186,7 +213,8 @@ gnuplot << EOF
     set xlabel "TOWN NAMES"
     set ylabel "NB ROUTES"
     set xtics rotate by 45 right
-    set yrange [0:6000]
+    set yrange [0:4000]
+    set ytics 0,500,4000
     set style data histograms
     set style histogram cluster gap 1
     set style fill solid
@@ -206,11 +234,17 @@ EOF
 
     -s) #min, max, averrage distances
         start_time=$(date +%s.%N) #start the timer
-       
+
+        echo "getting the 50 longest max-min rides ..."
+
+        #cut part
+
         cut -d';' -f1,5 data/data.csv |tail -n+2 > temp/s_data.temp
 
         end_time=$(date +%s.%N) #end the timer
         elapsed_time1=$(echo "$end_time - $start_time" | bc) #take the first time
+
+        #c part
 
         cd progc/
 
@@ -226,6 +260,7 @@ EOF
         ./s_progc ../temp/s_data.temp | head -50 > ../temp/s.temp
         cd ..
         
+        # Gnuplot
 gnuplot << EOF
     set terminal pngcairo enhanced font "arial,10" size 1100,800
     set output 'pictures/s_output.png'
