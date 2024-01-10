@@ -9,7 +9,7 @@ To use this programm you'll need linux or macos system.
 
 You'll need 3 additional programs to run correctly graph_sort.sh
 
-1 : imagemagick      ;      2 : vlc      ;      3 : gnuplot
+imagemagick, vlc and gnuplot
 
       Mac : brew install imagemagick | Ubuntu : sudo apt install imagemagick
 
