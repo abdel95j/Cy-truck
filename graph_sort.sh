@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -d "temp" ]; then #Check if temp/ exist, else create it and give all acces
+if [ ! -d "temp" ]; then #Check if temp/ exist, else create it and give all access
     mkdir temp
     chmod u+r+w+x temp
 
@@ -8,12 +8,12 @@ elif [ -s "temp" ]; then #Check if temp/ is empty, else rm its content
     rm -rf temp/*.temp
 fi
 
-if [ ! -d "pictures" ]; then #Check if pictures/ exist, else create it and give all acces
+if [ ! -d "pictures" ]; then #Check if pictures/ exist, else create it and give all access
     mkdir pictures
     chmod u+r+w+x pictures
 fi
 
-tmp=$@
+tmp=$*
 
 for i in ${tmp#*" "}; do    #special options (will read the last you put)
     case $i in
@@ -21,36 +21,36 @@ for i in ${tmp#*" "}; do    #special options (will read the last you put)
             echo -e "Usage : ./graph_sort.sh [FILE.csv] [OPTION]\n"
             echo -e "FILE has to be a .csv file using the right format. \n Format : Route ID;Step ID;Town A;Town B;Distance;Driver name \n"
             echo -e "Available options:\n"
-            echo -e " -d1 :        Gets the 10 drivers with the most ammount of drives and arrays a horizontal\n              histogram graph\n\n"
+            echo -e " -d1 :        Gets the 10 drivers with the most amount of drives and arrays a horizontal\n              histogram graph\n\n"
             echo -e " -d2 :        Gets the 10 drivers with the longest total distances crossed and arrays a\n              horizontal histogram graph\n\n"
             echo -e " -l  :        Gets the 10 longest roads and arrays a vertical histogram graph\n\n\n"
-            echo -e " -t  :        Gets the 10 most crossed towns and arrays vertical histogram graph with the\n              ammount of crossing and the number of time when the town is a departure city\n              of a road\n\n"
-            echo -e " -s  :        Gets the min, max and averrage distance of every road. Keeps the 50 highest\n              sorted by (max - min) and arrays a min-max-av graph\n\n"
+            echo -e " -t  :        Gets the 10 most crossed towns and arrays vertical histogram graph with the\n              amount of crossing and the number of time when the town is a departure city\n              of a road\n\n"
+            echo -e " -s  :        Gets the min, max and average distance of every road. Keeps the 50 highest\n              sorted by (max - min) and arrays a min-max-av graph\n\n"
             echo -e " -c | --clean :    Cleans the directory by removing temp files, pictures files and c\n                   executables in progc and exit\n\n"
             echo -e " -h | --help  :    Arrays help and exit\n"
             
             exit 0 ;;
         
         -c | --clean)   #if arg? == -c || --clean, cleans directories
-            cd temp ; rm -rf *.temp ; cd ..
-            cd progc ; rm -rf *_progc ; cd ..
-            cd pictures ; rm -rf *.png ; cd ..
+            cd temp || exit ; rm -rf *.temp ; cd ..
+            cd progc || exit ; rm -rf *_progc ; cd ..
+            cd pictures || exit ; rm -rf *.png ; cd ..
             echo clean succeded
             exit 0;;
     esac 
 done
 
 if (($# <= 1)); then #Check if at least 2 args
-    echo "arg error : no argument dected"
+    echo "arg error : no argument detected"
     exit 1
 fi
 
-if [ ! -f $1 ]; then #Check if arg1 is a file
+if [ ! -f "$1" ]; then #Check if arg1 is a file
     echo "arg 1 error : not a file"
     exit 2
 fi
 
-if [ $(echo ${1##*.}) != "csv" ]; then #Check if arg1 is a .csv file
+if [ $(echo "${1##*.}") != "csv" ]; then #Check if arg1 is a .csv file
     echo "arg 1 error : not a .csv file"
     exit 3
 fi
@@ -73,9 +73,9 @@ for i in ${tmp#*" "}; do
         cut -d';' -f1,6 "$1" |awk -F';' '!arr[$1]++ {arr2[$2]++} END {for (i in arr2) printf "%s;%d\n",i,arr2[i]}' | sort -t';' -k2nr | head > temp/d1.temp
         
         # cut the data.csv file to just keep column 1 and 6
-        # takes the duplicates of rides ID away using an arr to see if the ID were encountred already
-        # next, counts the occurences of names using arr2 and separate them by ';' in the output
-        # after all this, sort the output of names numerically by occurences and from the highest to lowest
+        # takes the duplicates of rides ID away using an arr to see if the ID were encountered already
+        # next, counts the occurrences of names using arr2 and separate them by ';' in the output
+        # after all this, sort the output of names numerically by occurrences and from the highest to lowest
         # using ; as delimiter. To finish, take the 10 first lines of the output
         # finally it sends all in the d1.temp file in temp/
 
@@ -115,7 +115,7 @@ EOF
 
         #awk part
 
-        LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' $1 | sort -t';' -k2nr | head > temp/d2.temp
+        LC_NUMERIC=en_US.UTF-8 awk -F';' 'NR>1 {sum[$6] += $5} END {for (key in sum) printf "%s;%.2f\n", key, sum[key]}' "$1" | sort -t';' -k2nr | head > temp/d2.temp
 
         # Gnuplot
 gnuplot << EOF
@@ -152,7 +152,7 @@ EOF
 
         #awk part
 
-        cut -d';' -f1,5 $1 |LC_NUMERIC=en_US.UTF-8 awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
+        cut -d';' -f1,5 "$1" |LC_NUMERIC=en_US.UTF-8 awk -F';' '{arr[$1]+=$2} END {for (i in arr) printf "%s;%f\n", i, arr[i]}' |sort -t';' -k2,2nr |head -n 10 | sort -t';' -k1,2nr > temp/l.temp
         
         # Gnuplot
 gnuplot << EOF
@@ -191,7 +191,7 @@ EOF
 
         #c part
 
-        cd progc/
+        cd progc/ || exit
 
         make t_progc -s
         
@@ -246,7 +246,7 @@ EOF
 
         #c part
 
-        cd progc/
+        cd progc/ || exit
 
         make s_progc -s
         
