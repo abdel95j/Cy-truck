@@ -290,5 +290,5 @@ EOF
 done
 
 killall vlc &> temp/vlc.log
-rm temp/vlc.log
-rm temp/display.log
+rm -rf temp/vlc.log
+rm -rf temp/display.log
