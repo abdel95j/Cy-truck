@@ -29,3 +29,8 @@ The script will cut the data.csv file in order to treat it faster. The cut resul
 
 In the progc directory you can use "make" command to compilate s_progc.c by using s_progc target, t_progc.c by using t_progc target
 and you can also rm the executables using the clean target. (You can also use -c option for a more complete clean)
+
+----------------------------------------------------
+FINAL GRADE
+
+17/20
