@@ -33,4 +33,4 @@ and you can also rm the executables using the clean target. (You can also use -c
 ----------------------------------------------------
 FINAL GRADE
 
-17/20
+We got 17/20
